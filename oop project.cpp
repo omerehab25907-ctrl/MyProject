@@ -1,32 +1,11 @@
 #include <iostream>
+#include <string>
 #include <algorithm>
 #include "Image_Class.h"
 
 using namespace std;
 
-void filter_Grayscale(Image& img) {
-    for (int i = 0; i < img.width; ++i) {
-        for (int j = 0; j < img.height; ++j) {
-            int avg = (img(i, j, 0) + img(i, j, 1) + img(i, j, 2)) / 3;
-            img(i, j, 0) = avg;
-            img(i, j, 1) = avg;
-            img(i, j, 2) = avg;
-        }
-    }
-}
-
-void filter_BlackAndWhite(Image& img) {
-    for (int i = 0; i < img.width; ++i) {
-        for (int j = 0; j < img.height; ++j) {
-            int avg = (img(i, j, 0) + img(i, j, 1) + img(i, j, 2)) / 3;
-            int bw = (avg >= 128) ? 255 : 0;
-            img(i, j, 0) = bw;
-            img(i, j, 1) = bw;
-            img(i, j, 2) = bw;
-        }
-    }
-}
-
+// Filter 3: Invert Image
 void filter_Invert(Image& img) {
     for (int i = 0; i < img.width; ++i) {
         for (int j = 0; j < img.height; ++j) {
@@ -37,15 +16,50 @@ void filter_Invert(Image& img) {
     }
 }
 
-void filter_Merge(Image& img1, Image& img2, Image& mergedImg) {
-    int minW = min(img1.width, img2.width);
-    int minH = min(img1.height, img2.height);
-    mergedImg = Image(minW, minH);
+// Filter 7: Darken and Lighten Image
+void filter_LightenDarken(Image& img, bool lighten) {
+    for (int i = 0; i < img.width; ++i) {
+        for (int j = 0; j < img.height; ++j) {
+            for (int k = 0; k < img.channels; ++k) {
+                int val = img(i, j, k);
+                if (lighten) {
+                    val = val + (255 - val) * 0.5;
+                }
+                else {
+                    val = val * 0.5;
+                }
+                img(i, j, k) = min(255, max(0, val));
+            }
+        }
+    }
+}
 
-    for (int i = 0; i < minW; ++i) {
-        for (int j = 0; j < minH; ++j) {
-            for (int k = 0; k < img1.channels; ++k) {
-                mergedImg(i, j, k) = (img1(i, j, k) + img2(i, j, k)) / 2;
+// Filter 11: Resizing Images
+void filter_Resize(Image& img, int newWidth, int newHeight) {
+    Image target(newWidth, newHeight);
+    double scaleX = (double)img.width / newWidth;
+    double scaleY = (double)img.height / newHeight;
+
+    for (int i = 0; i < newWidth; ++i) {
+        for (int j = 0; j < newHeight; ++j) {
+            int srcX = i * scaleX;
+            int srcY = j * scaleY;
+            for (int k = 0; k < img.channels; ++k) {
+                target(i, j, k) = img(srcX, srcY, k);
+            }
+        }
+    }
+    img = target;
+}
+
+// Filter 15: TV Effect
+void filter_TVEffect(Image& img) {
+    for (int j = 0; j < img.height; ++j) {
+        if (j % 2 == 0) {
+            for (int i = 0; i < img.width; ++i) {
+                for (int k = 0; k < img.channels; ++k) {
+                    img(i, j, k) = img(i, j, k) * 0.5;
+                }
             }
         }
     }
@@ -53,59 +67,58 @@ void filter_Merge(Image& img1, Image& img2, Image& mergedImg) {
 
 int main() {
     string filename;
-    cout << "Enter the image file name to load: ";
+    cout << "Enter input image filename: ";
     cin >> filename;
 
     Image img(filename);
-
     int choice;
-    do {
-        cout << "\n--- filters Menu ---\n";
-        cout << "1. Grayscale Filter\n";
-        cout << "2. Black and White Filter\n";
-        cout << "3. Invert Image Filter\n";
-        cout << "4. Merge Images\n";
-        cout << "5. Save Image\n";
-        cout << "0. Exit\n";
+
+    while (true) {
+        cout << "\n--- Image Processing Menu ---\n";
+        cout << "1. Filter 3: Invert Image\n";
+        cout << "2. Filter 7: Lighten / Darken Image\n";
+        cout << "3. Filter 11: Resize Image\n";
+        cout << "4. Filter 15: TV Effect\n";
+        cout << "5. Save and Exit\n";
         cout << "Choose an option: ";
         cin >> choice;
 
         if (choice == 1) {
-            filter_Grayscale(img);
-            cout << "Grayscale filter applied successfully!\n";
+            filter_Invert(img);
+            cout << "Invert filter applied.\n";
         }
         else if (choice == 2) {
-            filter_BlackAndWhite(img);
-            cout << "Black and White filter applied successfully!\n";
+            int subChoice;
+            cout << "1. Lighten\n2. Darken\nChoice: ";
+            cin >> subChoice;
+            filter_LightenDarken(img, subChoice == 1);
+            cout << "Lighten/Darken filter applied.\n";
         }
         else if (choice == 3) {
-            filter_Invert(img);
-            cout << "Invert filter applied successfully!\n";
+            int w, h;
+            cout << "Enter new width: ";
+            cin >> w;
+            cout << "Enter new height: ";
+            cin >> h;
+            filter_Resize(img, w, h);
+            cout << "Resize filter applied.\n";
         }
         else if (choice == 4) {
-            string filename2;
-            cout << "Enter the second image file name to merge: ";
-            cin >> filename2;
-            Image img2(filename2);
-            Image mergedImg;
-            filter_Merge(img, img2, mergedImg);
-            img = mergedImg;
-            cout << "Images merged successfully!\n";
+            filter_TVEffect(img);
+            cout << "TV Effect filter applied.\n";
         }
         else if (choice == 5) {
-            string outputFilename;
-            cout << "Enter the output image filename (e.g., output.jpg): ";
-            cin >> outputFilename;
-            img.saveImage(outputFilename);
-            cout << "Image saved successfully!\n";
-        }
-        else if (choice == 0) {
-            cout << "Exiting program. Goodbye!\n";
+            string outFilename;
+            cout << "Enter output image filename: ";
+            cin >> outFilename;
+            img.saveImage(outFilename);
+            cout << "Image saved successfully. Exiting...\n";
+            break;
         }
         else {
-            cout << "Invalid choice! Please try again.\n";
+            cout << "Invalid choice! Try again.\n";
         }
-    } while (choice != 0);
+    }
 
     return 0;
 }

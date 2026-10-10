@@ -1,2 +1,7 @@
 ﻿  oop project.cpp
+C:\Users\Omar Ehab\source\repos\oop project\oop project\oop project.cpp(26,31): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\Omar Ehab\source\repos\oop project\oop project\oop project.cpp(29,31): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\Omar Ehab\source\repos\oop project\oop project\oop project.cpp(45,22): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Omar Ehab\source\repos\oop project\oop project\oop project.cpp(46,22): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Omar Ehab\source\repos\oop project\oop project\oop project.cpp(61,49): warning C4244: '=': conversion from 'double' to 'unsigned char', possible loss of data
   oop project.vcxproj -> C:\Users\Omar Ehab\source\repos\oop project\x64\Debug\oop project.exe
